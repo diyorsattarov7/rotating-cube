@@ -14,6 +14,7 @@ float g_fRotate1 = 0.0f;
 
 void FramebufferSizeCallback(GLFWwindow *window, int width, int height);
 void ProcessInput(GLFWwindow *window);
+void RenderCube();
 void DrawUnitSquare();
 void UpdateDeltaTime();
 
@@ -23,6 +24,7 @@ void FramebufferSizeCallback(GLFWwindow *window, int width, int height)
     g_iWindowWidth = width;
     g_iWindowHeight = height;
     glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(60.0f, (double)width / height, 0.1, 100.0);
 }
@@ -55,15 +57,13 @@ int main()
     {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return -1;
-    }
-    
-    std::cout << "GLFW initialized" << std::endl;
+    } 
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
     g_pWindow = glfwCreateWindow(g_iWindowWidth, g_iWindowHeight,
-                                 "Rotating Square Render", nullptr, nullptr);
+                                 "Rotating Cube", nullptr, nullptr);
 
     if (!g_pWindow)
     {
@@ -83,11 +83,11 @@ int main()
         return -1;
     }
 
-    std::cout << "GLEW initialized" << std::endl;
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(60.0f, (float)g_iWindowWidth / g_iWindowHeight, 0.1, 100.0);
+
+    glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     g_PreviousTicks = clock();
@@ -97,7 +97,7 @@ int main()
         ProcessInput(g_pWindow);
         UpdateDeltaTime();
 
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
@@ -105,8 +105,7 @@ int main()
     
         glRotatef(g_fRotate1, 0.0f, 1.0f, 0.0f);
 
-        glColor3f(1.0f, 0.0f, 0.0f);
-        DrawUnitSquare();
+        RenderCube(); 
 
         glfwSwapBuffers(g_pWindow);
         glfwPollEvents();
@@ -115,4 +114,53 @@ int main()
     glfwDestroyWindow(g_pWindow);
     glfwTerminate();
     return 0;
+}
+
+void RenderCube()
+{
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glPushMatrix();
+    glTranslatef(0.0f, 1.0f, 0.0f);
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+    DrawUnitSquare();
+    glPopMatrix();
+
+
+    glColor3f(1.0f, 0.5f, 0.0f);
+    glPushMatrix();
+    glTranslatef(0.0f, -1.0f, 0.0f);
+    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+    DrawUnitSquare();
+    glPopMatrix();
+
+
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, 1.0f);
+    DrawUnitSquare();
+    glPopMatrix();
+
+
+    glColor3f(1.0f, 1.0f, 0.0f);
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, -1.0f);
+    glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+    DrawUnitSquare();
+    glPopMatrix();
+
+
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glPushMatrix();
+    glTranslatef(-1.0f, 0.0f, 0.0f);
+    glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+    DrawUnitSquare();
+    glPopMatrix();
+
+
+    glColor3f(1.0f, 0.0f, 1.0f);
+    glPushMatrix();
+    glTranslatef(1.0f, 0.0f, 0.0f);
+    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+    DrawUnitSquare();
+    glPopMatrix();
 }
