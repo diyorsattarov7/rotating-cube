@@ -51,4 +51,19 @@ int main()
     }
 
     std::cout << "GLEW initialized" << std::endl;
+
+    glViewport(0, 0, g_iWindowWidth, g_iWindowHeight);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    while (!glfwWindowShouldClose(g_pWindow))
+    {
+        ProcessInput(g_pWindow);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glfwSwapBuffers(g_pWindow);
+        glfwPollEvents();
+    }
+
+    glfwDestroyWindow(g_pWindow);
+    glfwTerminate();
+    return 0;
 }
