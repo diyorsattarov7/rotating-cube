@@ -1,6 +1,7 @@
 // clang-format off
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <OpenGL/glu.h>
 #include <iostream>
 
 int g_iWindowWidth = 1000, g_iWindowHeight = 800;
@@ -16,6 +17,16 @@ void FramebufferSizeCallback(GLFWwindow *window, int width, int height)
 
 void ProcessInput(GLFWwindow *window) { if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true); }
 
+void DrawUnitSquare()
+{
+    glBegin(GL_QUADS);
+    glVertex3f(1.0f, 1.0f, 0.0f);
+    glVertex3f(-1.0f, 1.0f, 0.0f);
+    glVertex3f(-1.0f, -1.0f, 0.0f);
+    glVertex3f(1.0f, -1.0f, 0.0f);
+    glEnd();
+}
+
 int main()
 {
     if (!glfwInit())
@@ -30,7 +41,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 
     g_pWindow = glfwCreateWindow(g_iWindowWidth, g_iWindowHeight,
-                                 "OpenGL Window", nullptr, nullptr);
+                                 "Square Render", nullptr, nullptr);
 
     if (!g_pWindow)
     {
@@ -52,13 +63,22 @@ int main()
 
     std::cout << "GLEW initialized" << std::endl;
 
-    glViewport(0, 0, g_iWindowWidth, g_iWindowHeight);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.0f, (float)g_iWindowWidth / g_iWindowHeight, 0.1, 100.0);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     while (!glfwWindowShouldClose(g_pWindow))
     {
         ProcessInput(g_pWindow);
         glClear(GL_COLOR_BUFFER_BIT);
+        
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glTranslatef(0.0f, 0.0f, -6.0f);
+        glColor3f(1.0f, 0.0f, 0.0f);
+        DrawUnitSquare();
+
         glfwSwapBuffers(g_pWindow);
         glfwPollEvents();
     }
