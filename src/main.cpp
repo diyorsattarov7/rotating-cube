@@ -25,4 +25,17 @@ int main()
     }
     
     std::cout << "GLFW initialized" << std::endl;
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+
+    g_pWindow = glfwCreateWindow(g_iWindowWidth, g_iWindowHeight,
+                                 "OpenGL Window", nullptr, nullptr);
+
+    if (!g_pWindow)
+    {
+        std::cerr << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
 }
