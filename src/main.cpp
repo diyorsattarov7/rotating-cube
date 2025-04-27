@@ -38,4 +38,17 @@ int main()
         glfwTerminate();
         return -1;
     }
+
+    glfwMakeContextCurrent(g_pWindow);
+    glfwSetFramebufferSizeCallback(g_pWindow, FramebufferSizeCallback);
+
+    glewExperimental = GL_TRUE;
+    if (glewInit() != GLEW_OK)
+    {
+        std::cerr << "Failed to initialize GLEW" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    std::cout << "GLEW initialized" << std::endl;
 }
