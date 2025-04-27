@@ -2,6 +2,8 @@
 
 A simple program that renders a rotating cube.
 
+![Rotating Cube Animation](images/main.gif)
+
 ## Dependencies
 
 * **clang++:** 
