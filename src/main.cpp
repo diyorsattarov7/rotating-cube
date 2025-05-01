@@ -12,13 +12,23 @@ clock_t g_PreviousTicks, g_CurrentTicks;
 float g_fRotationRate = 50.0f;
 float g_fRotate1 = 0.0f;
 
+bool g_bMousePressed = false;
+double g_dLastMouseX = 0.0, g_dLastMouseY = 0.0;
+float g_fViewRotX = 0.0f, g_fViewRotY = 0.0f;
+float g_fMouseSensitivity = 0.5f;
+bool g_bAutoRotate = true;
+
 void FramebufferSizeCallback(GLFWwindow *window, int width, int height);
 void ProcessInput(GLFWwindow *window);
-void RenderCube();
 void DrawUnitSquare();
+void RenderCube();
 void UpdateDeltaTime();
 
-void FramebufferSizeCallback(GLFWwindow *window, int width, int height)
+void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
+void CursorPosCallback(GLFWwindow *window, double xpos, double ypos);
+void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+
+void FramebufferSizeCallback(GLFWwindow *window [[maybe_unused]], int width, int height)
 {
     if (height == 0) height = 1;
     g_iWindowWidth = width;
@@ -29,7 +39,11 @@ void FramebufferSizeCallback(GLFWwindow *window, int width, int height)
     gluPerspective(60.0f, (double)width / height, 0.1, 100.0);
 }
 
-void ProcessInput(GLFWwindow *window) { if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, true); }
+void ProcessInput(GLFWwindow *window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
 
 void UpdateDeltaTime()
 {
@@ -37,8 +51,12 @@ void UpdateDeltaTime()
     float deltaTicks = (float)(g_CurrentTicks - g_PreviousTicks);
     g_PreviousTicks = g_CurrentTicks;
     float fDeltaTime = deltaTicks / (float)CLOCKS_PER_SEC;
-    g_fRotate1 += (10 * g_fRotationRate * fDeltaTime);
-    g_fRotate1 = fmodf(g_fRotate1, 360.0f);
+
+    if (g_bAutoRotate)
+    {
+        g_fRotate1 += (10 * g_fRotationRate * fDeltaTime);
+        g_fRotate1 = fmodf(g_fRotate1, 360.0f);
+    }
 }
 
 void DrawUnitSquare()
@@ -49,6 +67,45 @@ void DrawUnitSquare()
     glVertex3f(-1.0f, -1.0f, 0.0f);
     glVertex3f(1.0f, -1.0f, 0.0f);
     glEnd();
+}
+
+void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods [[maybe_unused]])
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            g_bMousePressed = true;
+            glfwGetCursorPos(window, &g_dLastMouseX, &g_dLastMouseY);
+        } 
+        else if (action == GLFW_RELEASE)
+        {
+            g_bMousePressed = false;
+        }
+    }
+}
+
+void CursorPosCallback(GLFWwindow *window [[maybe_unused]], double xpos, double ypos)
+{
+    if (g_bMousePressed)
+    {
+        double dx = xpos - g_dLastMouseX;
+        double dy = ypos - g_dLastMouseY;
+
+        g_fViewRotY += dx * g_fMouseSensitivity;
+        g_fViewRotX += dy * g_fMouseSensitivity;
+
+        g_dLastMouseX = xpos;
+        g_dLastMouseY = ypos;
+    }
+}
+
+void KeyCallback(GLFWwindow *window [[maybe_unused]], int key,
+                 int scancode [[maybe_unused]], int action,
+                 int mods [[maybe_unused]])
+{
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+        g_bAutoRotate = !g_bAutoRotate;
 }
 
 int main()
@@ -75,6 +132,10 @@ int main()
     glfwMakeContextCurrent(g_pWindow);
     glfwSetFramebufferSizeCallback(g_pWindow, FramebufferSizeCallback);
 
+    glfwSetMouseButtonCallback(g_pWindow, MouseButtonCallback);
+    glfwSetCursorPosCallback(g_pWindow, CursorPosCallback);
+    glfwSetKeyCallback(g_pWindow, KeyCallback);
+
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
     {
@@ -92,6 +153,11 @@ int main()
 
     g_PreviousTicks = clock();
 
+    std::cout << "Controls:" << std::endl;
+    std::cout << "- Left-click and drag: Rotate view" << std::endl;
+    std::cout << "- Spacebar: Toggle auto-rotation" << std::endl;
+    std::cout << "- ESC: Quit" << std::endl;
+
     while (!glfwWindowShouldClose(g_pWindow))
     {
         ProcessInput(g_pWindow);
@@ -102,6 +168,9 @@ int main()
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glTranslatef(0.0f, 0.0f, -6.0f);
+
+        glRotatef(g_fViewRotX, 1.0f, 0.0f, 0.0f);
+        glRotatef(g_fViewRotY, 0.0f, 1.0f, 0.0f);
     
         glRotatef(g_fRotate1, 0.0f, 1.0f, 0.0f);
 
